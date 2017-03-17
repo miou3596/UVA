@@ -1,236 +1,188 @@
-    import java.io.*;
-    import java.util.*;
-
-
-    public class G {
-
-        public static void main(String [] args) throws  Exception
-        {
-            Scanner sc = new Scanner(System.in);
-            PrintWriter out = new PrintWriter(System.out);
-            StringBuilder sb = new StringBuilder();
-
-            int T = Math.max(0,sc.nextInt());
-            while (T -- > 0)
-            {
-                int n = sc.nextInt();
-                int m = sc.nextInt();
-                int k = sc.nextInt();
-                int d = sc.nextInt();
-
-                Point doctors [] = new Point[m];
-                for (int i = 0 ; i < m ; ++i)
-                {
-                    doctors[i] = new Point(sc.nextInt() , sc.nextInt());
-                }
-
-                ArrayList<ArrayList<Point>> trees = new ArrayList<>();
-
-                int idx = 0 ;
-                for (int i = 0 ; i < n ; ++i)
-                {
-                    int b = sc.nextInt();
-                    ArrayList<Point> tree = new ArrayList<>();
-                    for (int j = 0 ; j < b ; ++j)
-                    {
-                        Point cur = new Point(sc.nextInt() , sc.nextInt());
-                        tree.add(cur);
-                    }
-                    trees.add(tree);
-                }
-                UnionFind UF = new UnionFind(n);
-                for (int i = 0 ; i < n - 1; ++i)
-                {
-                    for (int j = i + 1 ; j < n ; ++j)
-                    {
-                        for (int h = 0 ; h < trees.get(i).size() ; ++h)
-                        {
-                            for (int l = 0 ; l < trees.get(j).size() ; ++l)
-                            {
-                                int x1 = trees.get(i).get(h).x;
-                                int y1 = trees.get(i).get(h).y;
-                                int x2 = trees.get(j).get(l).x;
-                                int y2 = trees.get(j).get(l).y;
-                                if ((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) <= k * k)
-                                    if (!UF.isSameSet(i , j))
-                                        UF.unionSet(i , j);
-                            }
-                        }
-                    }
-                }
-
-
-
-                boolean ok = false;
-                for (int i = 0 ; i < trees.size() && !ok; ++i)
-                {
-                    if (!UF.isSameSet(0,i)) continue;
-                    for (int j = 0 ; j < trees.get(i).size() ; ++j) {
-                        for (int f = 0; f < doctors.length; ++f) {
-                            int x1 = trees.get(i).get(j).x;
-                            int y1 = trees.get(i).get(j).y;
-                            int x2 = doctors[f].x;
-                            int y2 = doctors[f].y;
-
-                            if ((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) <= d * d) {
-                                ok = true;
-                                break;
-                            }
-                        }
-                    }
-
-                }
-
-                if (ok) sb.append("Tree can be saved :)\n");
-                else sb.append("Tree can't be saved :(\n");
-
-            }
-
-            out.print(sb.toString());
-            out.flush();
-            out.close();
-        }
-
-
-        static class UnionFind {
-            int [] p , rank , setSize;
-            public UnionFind(int size)
-            {
-                p = new int[size] ;
-                rank = new int[size] ;
-                setSize = new int[size];
-                for(int i = 0 ; i < size ; ++i) {
-                    p[i] = i;
-                    setSize[i] = 1;
-                }
-            }
-
-            int findSet(int i ) {return (p[i] == i)? i : (p[i] = findSet(p[i]));}
-            boolean isSameSet(int i , int j) {return findSet(i) == findSet(j);}
-            void unionSet(int i , int j)
-            {
-                if(!isSameSet(i,j))
-                {
-                    int x = findSet(i) , y = findSet(j);
-                    if(rank[x] > rank[y]) {p[y] = x; setSize[x] = setSize[x] + setSize[y];}
-                    else
-                    {
-                        p[x] = y;
-                        setSize[y] = setSize[y] + setSize[x];
-                        if(rank[x] == rank[y]) ++rank[y];
-                    }
-                }
-            }
-
-
-        }
-        static class Point implements Comparable<Point> {
-            int x;
-            int y ;
-            Point (int xx , int yy)
-            {
-                x = xx;
-                y = yy;
-            }
-
-            @Override
-            public int compareTo(Point point) {
-                return x == point.x && y == point.y ? 0 : x == point.x ? y - point.y : x - point.x  ;
-            }
-
-            @Override
-            public boolean equals(Object o) {
-                return x == ((Point)(o)).x && y == ((Point)(o)).y;
-            }
-
-            @Override
-            public String toString() {
-                return ("(" + x+","+y +")");
-            }
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        static class Scanner
-        {
-            StringTokenizer st;
-            BufferedReader br;
-
-            public Scanner(InputStream s){	br = new BufferedReader(new InputStreamReader(s));}
-
-            public String next() throws IOException
-            {
-                while (st == null || !st.hasMoreTokens())
-                    st = new StringTokenizer(br.readLine());
-                return st.nextToken();
-            }
-
-            public int nextInt() throws IOException {return Integer.parseInt(next());}
-
-            public long nextLong() throws IOException {return Long.parseLong(next());}
-
-            public String nextLine() throws IOException {return br.readLine();}
-
-            public double nextDouble() throws IOException
-            {
-                String x = next();
-                StringBuilder sb = new StringBuilder("0");
-                double res = 0, f = 1;
-                boolean dec = false, neg = false;
-                int start = 0;
-                if(x.charAt(0) == '-')
-                {
-                    neg = true;
-                    start++;
-                }
-                for(int i = start; i < x.length(); i++)
-                    if(x.charAt(i) == '.')
-                    {
-                        res = Long.parseLong(sb.toString());
-                        sb = new StringBuilder("0");
-                        dec = true;
-                    }
-                    else
-                    {
-                        sb.append(x.charAt(i));
-                        if(dec)
-                            f *= 10;
-                    }
-                res += Long.parseLong(sb.toString()) / f;
-                return res * (neg?-1:1);
-            }
-
-            public boolean ready() throws IOException {return br.ready();}
-
-
-        }
-    }
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.StringTokenizer;
+
+public class P1 {
+
+	public static void main(String[] args) throws Exception {
+		Scanner sc = new Scanner(System.in);
+		PrintWriter out = new PrintWriter(System.out);
+		
+		int T = sc.nextInt();
+		while (T-->0)
+		{
+			int trees_num = sc.nextInt(), doctors_num = sc.nextInt(), dist_trees = sc.nextInt(), dist_doc = sc.nextInt();
+			Doctor []doctors = new Doctor[doctors_num];
+			Tree [] trees = new Tree[trees_num];
+			
+			int ALL = trees_num;
+			for (int i = 0; i < doctors_num; i++)
+				doctors[i] = new Doctor(ALL++, sc.nextInt(), sc.nextInt());
+			
+			for (int i = 0; i < trees_num; i++)
+			{
+				int cnt = sc.nextInt();
+				int [] x = new int[cnt], y = new int[cnt];
+				for (int j = 0; j < cnt; j++)
+				{
+					x[j] = sc.nextInt();
+					y[j] = sc.nextInt();
+				}
+				
+				trees[i] = new Tree(i, x, y);
+			}
+			
+			DS uf = new DS(ALL);
+			
+			for (int i = 0; i < trees_num; i++)
+			{
+				for (int j = i + 1; j < trees_num; j++)
+				{
+					if (can(trees[i], trees[j], dist_trees))
+						uf.union(trees[i].idx, trees[j].idx);
+				}
+			}
+
+			
+			for (int i = 0; i < trees_num; i++)
+				for (int j = 0; j < doctors_num; j++)
+					if (can(trees[i], new Tree(doctors[j].idx, new int [] {doctors[j].x}, new int [] {doctors[j].y}), dist_doc))
+						uf.union(trees[i].idx, doctors[j].idx);
+
+			boolean ok = false;
+			for (int j = 0; j < doctors_num; j++)
+				ok |= (uf.find(0) == uf.find(doctors[j].idx));
+			
+			if (ok) out.println("Tree can be saved :)");
+			else out.println("Tree can't be saved :(");
+		}
+		
+		out.flush();
+		out.close();
+	}
+	
+	static int dist_sq (int x1, int y1, int x2, int y2) {
+		return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+	}
+	static boolean can (Tree t1, Tree t2, int d)
+	{
+		d *= d;
+		for (int i = 0; i < t1.x.length; i++)
+			for (int j = 0; j < t2.x.length; j++)
+				if (dist_sq(t1.x[i], t1.y[i], t2.x[j], t2.y[j]) <= d)
+					return true;
+		
+		return false;
+	}
+
+	static class DS
+	{
+		int sz;
+		int [] rank, p;
+		
+		DS(int size) {sz = size; rank = new int[sz]; p = new int[sz]; for (int i = 0; i < sz; i++) p[i] = i;}
+		
+		int find (int idx) {return p[idx] == idx ? idx : (p[idx] = find(p[idx]));}
+		
+		void union (int i, int j)
+		{
+			int x = find(i), y = find(j);
+			if (x == y) return;
+			
+			if (rank[x] > rank[y])
+				p[y] = x;
+			else
+			{
+				p[x] = y;
+				if (rank[x] == rank[y]) rank[y]++;
+			}
+		}
+	}
+	static class Tree
+	{
+		int []x, y;
+		int idx;
+		Tree (int ii, int []xx, int []yy) {x = xx; y = yy; idx = ii;}
+	}
+	
+	static class Doctor
+	{
+		int idx, x, y;
+		Doctor(int ii, int xx, int yy) {idx = ii; x = xx; y = yy;}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	static class Scanner {
+
+		StringTokenizer st;
+		BufferedReader br;
+
+		public Scanner(InputStream s) {
+			br = new BufferedReader(new InputStreamReader(s));
+		}
+
+		public String next() throws IOException {
+			while (st == null || !st.hasMoreTokens())
+				st = new StringTokenizer(br.readLine());
+			return st.nextToken();
+		}
+
+		public int nextInt() throws IOException {
+			return Integer.parseInt(next());
+		}
+
+		public long nextLong() throws IOException {
+			return Long.parseLong(next());
+		}
+
+		public String nextLine() throws IOException {
+			return br.readLine();
+		}
+
+		public double nextDouble() throws IOException {
+			String x = next();
+			StringBuilder sb = new StringBuilder("0");
+			double res = 0, f = 1;
+			boolean dec = false, neg = false;
+			int start = 0;
+			if (x.charAt(0) == '-') {
+				neg = true;
+				start++;
+			}
+			for (int i = start; i < x.length(); i++)
+				if (x.charAt(i) == '.') {
+					res = Long.parseLong(sb.toString());
+					sb = new StringBuilder("0");
+					dec = true;
+				} else {
+					sb.append(x.charAt(i));
+					if (dec)
+						f *= 10;
+				}
+			res += Long.parseLong(sb.toString()) / f;
+			return res * (neg ? -1 : 1);
+		}
+
+		public boolean ready() throws IOException {
+			return br.ready();
+		}
+
+		public boolean nextEmpty() throws IOException {
+			String s = nextLine();
+			st = new StringTokenizer(s);
+			return s.isEmpty();
+		}
+	}
+}
