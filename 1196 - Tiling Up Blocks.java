@@ -50,7 +50,7 @@ public class C {
             int max = 0 ;
             for (int i = 0 ; i < n ; ++i)
                 for (int j = i + 1 ; j < n ; ++j)
-                    if (blocks[j].l >= blocks[i].l && blocks[j].r >= blocks[i].r)
+                    if (blocks[j].r >= blocks[i].r)
                     {
                         dp[j] = Math.max(dp[j] , dp[i] + 1);
                         max = Math.max(max , dp[j]);
