@@ -54,7 +54,7 @@ public class Main {
 			Pair cur = pairs.get(i);
 			P[i] = i;
 			for (int j =  0 ; j < i ; ++j) {
-				if (cur.p < pairs.get(j).p && LIS[j] + 1 > LIS[i]) {
+				if (cur.w > pairs.get(j).w && cur.p < pairs.get(j).p && LIS[j] + 1 > LIS[i]) {
 					P[i] = j;
 					LIS[i] = LIS[j] + 1;
 					if (LIS[i] > lis) {
