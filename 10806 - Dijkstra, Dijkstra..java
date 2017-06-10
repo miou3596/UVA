@@ -1,105 +1,175 @@
-public class Main {
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.*;
 
-static final int INF = (int)1e9;
-static ArrayList<Edge>[] adjList;
-static int N, s, t, cost, p[];
-static Edge[] edges;
-
-static boolean minCost()
+public class Main
 {
-        cost = 0;
-        s = 0; t = N - 1;
-        int flow = 0;
-        while(true)
-        {
+    static int V, E, S, T;
+    static ArrayList<Edge> [] adjList;
+    static int cost [][];
+    static int [][] res;
 
-
-                int[] dist = new int[N];
-                Arrays.fill(dist, INF);
-                dist[s] = 0;
-                p = new int[N];
-                edges = new Edge[N];
-                for(int k = 0; k < N - 1; ++k)
-                        for(int u = 0; u < N; ++u)
-                                if(adjList[u] != null)
-                                        for(Edge e : adjList[u])
-                                                if(e.cap > 0 && dist[e.node] > dist[u] + e.cost)
-                                                {
-                                                        dist[e.node] = dist[u] + e.cost;
-                                                        p[e.node] = u;
-                                                        edges[e.node] = e;
-                                                }
-
-                if(edges[t] == null)
-                        return false;
-                flow += aug(t, 2 - flow);
-                if(flow == 2)
-                        break;
-        }
-
-        return true;
-}
-
-static int aug(int v, int flow)
-{
-        if(v == s)
-                return flow;
-        int u = p[v];
-        Edge e = edges[v];
-        flow = aug(u, Math.min(flow, e.cap));
-        e.cap -= flow;
-        e.rev.cap += flow;
-        cost += flow * e.cost;
-        return flow;
-}
-
-static void addEdge(int u, int v, int c, int w)
-{
-        if(adjList[u] == null)
-                adjList[u] = new ArrayList<Edge>();
-        if(adjList[v] == null)
-                adjList[v] = new ArrayList<Edge>();
-        Edge e1 = new Edge(v, c, w), e2 = new Edge(u, 0, -w);
-        e1.rev = e2; e2.rev = e1;
-        adjList[u].add(e1);
-        adjList[v].add(e2);
-}
-
-public static void main(String[] args) throws IOException
-{
+    public static void main(String[] args) throws IOException
+    {
         Scanner sc = new Scanner(System.in);
         PrintWriter out = new PrintWriter(System.out);
 
-        while(true)
-        {
-                N = sc.nextInt();
-                if(N == 0)
-                        break;
-                adjList = new ArrayList[N];
-                int E = sc.nextInt();
-                while(E-->0)
-                {
-                        int u = sc.nextInt() - 1, v = sc.nextInt() - 1, t = sc.nextInt();
-                        addEdge(u, v, 1, t);
-                        addEdge(v, u, 1, t);
-                }
-                if(minCost())
-                        out.println(cost);
-                else
-                        out.println("Back to jail");
+        while (true) {
+            V = sc.nextInt();
+            if (V == 0) break;
+            E = sc.nextInt();
+            V++;
+            T = V - 1;
+            res = new int[V][V];
+            adjList = new ArrayList[V];
+            cost = new int[V][V];
+            for (int i = 0; i < V; i++) adjList[i] = new ArrayList<>();
+            adjList[V - 2].add(new Edge(T, 0));
+            res[V - 2][T] = 2;
+            while (E-- > 0) {
+                int u = sc.nextInt() - 1, v = sc.nextInt() - 1, costt = sc.nextInt();
+                adjList[u].add(new Edge(v, costt));
+                adjList[v].add(new Edge(u, costt));
+                res[u][v] = res[v][u] = 1;
+                cost[u][v] = cost[v][u] = costt;
+            }
+            Pair res = edmondsKarp();
+            if (res.maxFlow == 2) {
+                out.println(res.cost);
+            } else {
+                out.println("Back to jail");
+            }
         }
+
         out.flush();
         out.close();
-}
+    }
 
-static class Edge
-{
-int node, cap, cost;
-Edge rev;
+    static class Edge {
+        int to, cost;
+        Edge (int tt, int cc) {
+            to = tt;
+            cost = cc;
+        }
+    }
 
-Edge(int x, int y, int z) {
-        node = x; cap = y; cost = z;
-}
-}
 
+    static int[] p;
+
+    static Pair augment(int v, int flow, int costt)
+    {
+        if(v == S)
+            return new Pair(flow, costt);
+        Pair pair = augment(p[v], Math.min(res[p[v]][v],flow), costt + cost[p[v]][v]);
+        if (v == T) {
+            res[p[v]][v]--;
+            res[v][p[v]]++;
+        } else {
+            cost[v][p[v]] = -cost[p[v]][v];
+            cost[p[v]][v] = 0;
+            res[p[v]][v] = 0;
+            res[v][p[v]] = 1;
+        }
+        return pair;
+    }
+    static class Pair {
+        int maxFlow, cost;
+        Pair (int m, int c) {
+            maxFlow = m;
+            cost = c;
+        }
+    }
+    static int INF = (int)1e9;
+    static Pair edmondsKarp()
+    {
+        int mf = 0, costt = 0;
+        while(true)
+        {
+            p = new int[V];
+            Arrays.fill(p, -1);
+            p[S] = S;
+            int[] dist = new int[V];
+            Arrays.fill(dist, INF);
+            dist[S] = 0;
+            boolean modified = true;
+            for(int k = 0; modified && k < V - 1; ++k)
+            {
+                modified = false;
+                for(int u = 0; u < V; ++u)
+                    for(Edge nxt: adjList[u])
+                        if(dist[u] + cost[u][nxt.to] < dist[nxt.to] && res[u][nxt.to] > 0)
+                        {
+                            modified = true;
+                            dist[nxt.to] = dist[u] + nxt.cost;
+                            p[nxt.to] = u;
+                        }
+            }
+
+            if(p[T] == -1)
+                break;
+            Pair res = augment(T, INF, 0);
+            mf += res.maxFlow;
+            costt += res.cost;
+        }
+        return new Pair(mf, costt);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    static class Scanner
+    {
+        StringTokenizer st;
+        BufferedReader br;
+
+        public Scanner(InputStream s){	br = new BufferedReader(new InputStreamReader(s));}
+
+        public String next() throws IOException
+        {
+            while (st == null || !st.hasMoreTokens())
+                st = new StringTokenizer(br.readLine());
+            return st.nextToken();
+        }
+
+        public int nextInt() throws IOException {return Integer.parseInt(next());}
+
+        public long nextLong() throws IOException {return Long.parseLong(next());}
+
+        public String nextLine() throws IOException {return br.readLine();}
+
+        public double nextDouble() throws IOException { return Double.parseDouble(next()); }
+
+        public boolean ready() throws IOException {return br.ready();}
+    }
 }
