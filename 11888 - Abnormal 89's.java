@@ -48,12 +48,7 @@ public class Main {
             P = new StringBuilder(s).reverse().toString().toCharArray();
             kmpPreProcess();
             if (kmpSearch()) out.println("alindrome");
-            else {
-                boolean isPal = true;
-                for (int i = 0; i < s.length(); i++)
-                    isPal &= s.charAt(i) == s.charAt(s.length() - i - 1);
-                out.println(isPal ? "palindrome" : "simple");
-            }
+            else out.println(s.equals(new StringBuilder(s).reverse().toString()) ? "palindrome" : "simple");
         }
 
         out.flush();
